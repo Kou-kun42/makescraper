@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	//"io/ioutil"
-	//"strings"
-	//"encoding/json"
+	"io/ioutil"
+	"encoding/json"
 	"github.com/gocolly/colly"
 )
 
@@ -58,5 +57,12 @@ func main() {
 		Ingredients: ingredients,
 		Directions: directions,
 	}
-	fmt.Println(recipe)
+	
+	// Output json
+	file, err := json.MarshalIndent(recipe, "", " ")
+	if err != nil {
+		panic(err)
+	}
+
+	_ = ioutil.WriteFile("recipes.json", file, 0644)
 }
