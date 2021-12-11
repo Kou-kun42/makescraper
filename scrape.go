@@ -14,9 +14,8 @@ type Recipe struct {
 	Directions []string `json:"directions"`
 }
 
-// main() contains code adapted from example found in Colly's docs:
-// http://go-colly.org/docs/examples/basic/
-func main() {
+// Gets info for a recipe
+func getRecipe(url string) Recipe {
 	// Instantiate default collector
 	c := colly.NewCollector()
 
@@ -27,10 +26,17 @@ func main() {
 	var title string
 	var ingredients []string
 	var directions []string
-
+	
 	// Before making a request print "Visiting ..."
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL.String())
+	})
+
+	// Catch error
+	c.OnError(func(_ *colly.Response, err error) {
+		if err != nil {
+			panic(err)
+		}
 	})
 
 	// Get the title
@@ -48,8 +54,8 @@ func main() {
 		directions = append(directions, e.Text)
 	})
 
-	// Start scraping on https://hackerspaces.org
-	c.Visit("https://www.tasteofhome.com/recipes/rum-balls/")
+	// Start scraping on given url
+	c.Visit(url)
 	
 	// Save as recipe
 	recipe := Recipe{
@@ -57,12 +63,36 @@ func main() {
 		Ingredients: ingredients,
 		Directions: directions,
 	}
-	
-	// Output json
-	file, err := json.MarshalIndent(recipe, "", " ")
+
+	return recipe
+
+}
+
+// Output json file
+func save(recipes []Recipe) {
+	file, err := json.MarshalIndent(recipes, "", " ")
 	if err != nil {
 		panic(err)
 	}
-
+	
 	_ = ioutil.WriteFile("recipes.json", file, 0644)
+}
+
+// main() contains code adapted from example found in Colly's docs:
+// http://go-colly.org/docs/examples/basic/
+func main() {
+
+	var recipes []Recipe
+
+	url := "https://www.tasteofhome.com/recipes/rum-balls/"
+	
+	recipe := getRecipe(url)
+
+	recipes = append(recipes, recipe)
+
+	url = "https://www.tasteofhome.com/recipes/gingerbread-men-cookies/"
+	recipe = getRecipe(url)
+	recipes = append(recipes, recipe)
+	
+	save(recipes)
 }
