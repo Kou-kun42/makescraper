@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"encoding/json"
+	"strings"
 	"github.com/gocolly/colly"
 )
 
@@ -65,7 +66,18 @@ func getRecipe(url string) Recipe {
 	}
 
 	return recipe
+}
 
+// Extract url from text file
+func getURL(filePath string) []string {
+	file, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		panic(err)
+	}
+
+	urls := strings.Split(string(file), "\n")
+
+	return urls
 }
 
 // Output json file
@@ -83,16 +95,17 @@ func save(recipes []Recipe) {
 func main() {
 
 	var recipes []Recipe
+	var filePath string
 
-	url := "https://www.tasteofhome.com/recipes/rum-balls/"
-	
-	recipe := getRecipe(url)
+	if filePath == "" {
+		filePath = "recipe-urls.txt"
+	}
 
-	recipes = append(recipes, recipe)
+	urls := getURL(filePath)
 
-	url = "https://www.tasteofhome.com/recipes/gingerbread-men-cookies/"
-	recipe = getRecipe(url)
-	recipes = append(recipes, recipe)
+	for _, r := range urls {
+		recipes = append(recipes, getRecipe(r))
+	}
 	
 	save(recipes)
 }
